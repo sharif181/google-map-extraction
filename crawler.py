@@ -29,7 +29,7 @@ def scroll_to_bottom(bot, element):
     last_height = bot.driver.execute_script("return arguments[0].scrollHeight", element)
     while True:
         bot.driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", element)
-        random_sleep_seconds(2)  # Pause to allow the scroll to happen
+        random_sleep_seconds(5)  # Pause to allow the scroll to happen
         new_height = bot.driver.execute_script("return arguments[0].scrollHeight", element)
         if new_height == last_height:
             break
@@ -52,7 +52,7 @@ def get_places_name(bot) -> set[str]:
             soup = BeautifulSoup(page_source, "html.parser")
             links = get_link(soup)
             final_links.update(links)
-            random_sleep_seconds(2)
+            random_sleep_seconds(10)
             scroll_to_bottom(bot, results)
             
             if len(final_links) != last_length:
@@ -124,6 +124,7 @@ def extract_places(places):
     # place_orders = []
     websites = []
     for place in places:
+        random_sleep_seconds(20)
         place_bot = Scraper(place)
         name=extract_name(place)
         main_div = place_bot.find_element_by_xpath('//*[@jsaction="focus:scrollable.focus; blur:scrollable.blur"]')
