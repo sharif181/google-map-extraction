@@ -176,6 +176,7 @@ def call_crawler(keyword: str, location: str) -> None:
     
 
 if __name__ == "__main__":
+    pass
     # call_crawler("restaurants", "Dhaka")
     # call_crawler(keyword="", location="", places=["https://www.google.com/maps/place/Spaghetti+Jazz,+Dhaka/data=!4m7!3m6!1s0x3755c7a6f8cab4eb:0x13f527876dcd7594!8m2!3d23.7952438!4d90.4143379!16s%2Fg%2F1ts3czt9!19sChIJ67TK-KbHVTcRlHXNbYcn9RM?authuser=0&hl=en&rclk=1"])
     # call_crawler("https://www.google.com/maps/search/software company near gulshan?hl=en")
