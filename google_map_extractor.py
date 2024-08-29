@@ -101,7 +101,7 @@ def display_results(new_result=None):
 
 root = tk.Tk()
 root.title("Google Map Data Scraper")
-root.geometry("800x650")
+root.geometry("1040x650")
 
 # Define color scheme
 bg_color = "#f0f0f0"
