@@ -40,7 +40,7 @@ class Scraper:
 		arguments = [
 			'--disable-blink-features=AutomationControlled',
 			'--lang=en',
-			# '--headless'
+			'--headless'
 		]
 
 		experimental_options = {
