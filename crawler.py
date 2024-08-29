@@ -63,7 +63,7 @@ def get_places_name(bot) -> set[str]:
             else:
                 break
         bot.driver.close()
-        return final_links
+        return list(final_links)
 
 
 
@@ -170,7 +170,7 @@ def call_crawler(keyword: str, location: str) -> None:
     url = url_maker(keyword=keyword, location=location)
     bot = Scraper(url)
     places = get_places_name(bot)
-    results = extract_places(places[0])
+    results = extract_places(places)
     return results
 
     
