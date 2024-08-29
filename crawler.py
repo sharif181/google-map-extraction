@@ -88,16 +88,20 @@ def extract_name(place: str) -> str:
 def clean_text(address):
     if not address:
         return ""
-    # Replace unwanted characters
-    text = address.text.replace('\ue0c8', '')  # Remove '\ue0c8'
-    text = text.replace('\ue558', '')  # Remove '\ue558'
-    text = text.replace('\ue0b0\n', '')  # Remove '\ue558'
-    
-    # Remove extra newlines and spaces
-    text = re.sub(r'\n+', '\n', text)  # Replace multiple newlines with a single newline
-    text = text.strip()  # Remove leading and trailing whitespace
-    
-    return text
+    try:
+        # Replace unwanted characters
+        text = address.text.replace('\ue0c8', '')  # Remove '\ue0c8'
+        text = text.replace('\ue558', '')  # Remove '\ue558'
+        text = text.replace('\ue0b0', '')  # Remove '\ue0b0'
+        text = text.replace('\ue80b\n', '')  # Remove '\ue80b\n'
+        
+        # Remove extra newlines and spaces
+        text = re.sub(r'\n+', '\n', text)  # Replace multiple newlines with a single newline
+        text = text.strip()  # Remove leading and trailing whitespace
+        
+        return text
+    except Exception as e:
+        return ""
 
 def extract_phone_number(phone):
     if not phone:
@@ -118,7 +122,6 @@ def extract_phone_number(phone):
 def extract_places(places):
     names = []
     phones = []
-    emails = []
     addresses = []
     links = []
     # place_orders = []
@@ -135,11 +138,12 @@ def extract_places(places):
                         .click()\
                             .perform()
         address = place_bot.find_element_by_xpath("//button[contains(@aria-label, 'Address:')]", False, 4)
-        phone = place_bot.find_element_by_xpath("//button[starts-with(@data-item-id,'phone')]", False, 20)
-        
+        phone = place_bot.find_element_by_xpath("//button[starts-with(@data-item-id,'phone')]", False, 10)
+        website = place_bot.find_element_by_xpath("//a[starts-with(@data-item-id,'authority')]", False, 10)
         phone = clean_text(phone)
         phones.append(phone)
         addresses.append(clean_text(address))
+        websites.append(clean_text(website))
         names.append(name)
         links.append(place)
         # place_order = place_bot.find_element_by_xpath("//a[@data-tooltip='Place an order']", False, 4)
@@ -153,10 +157,9 @@ def extract_places(places):
         "name": names,
         "phone": phones,
         "address": addresses,
-        "email": emails,
         # "place_order": place_orders,
         "website": websites,
-        "links": links
+        "google_map_links": links
     }
 
 def call_crawler(url: str, places: str = None) -> None:
@@ -169,7 +172,8 @@ def call_crawler(url: str, places: str = None) -> None:
 
 if __name__ == "__main__":
     # https://www.google.com/maps/place/The+Garden+Kitchen+at+Sheraton+Dhaka
-    call_crawler("https://www.google.com/maps/search/restaurants near gulshan dhaka?hl=en")
+    call_crawler("https://www.google.com/maps/search/software company near gulshan?hl=en")
+    # call_crawler("https://www.google.com/maps/search/restaurants near gulshan dhaka?hl=en")
 
     # data = {
     #     'https://www.google.com/maps/place/Spaghetti+Jazz,+Dhaka/data=!4m7!3m6!1s0x3755c7a6f8cab4eb:0x13f527876dcd7594!8m2!3d23.7952438!4d90.4143379!16s%2Fg%2F1ts3czt9!19sChIJ67TK-KbHVTcRlHXNbYcn9RM?authuser=0&hl=en&rclk=1', 
