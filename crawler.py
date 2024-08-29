@@ -162,17 +162,23 @@ def extract_places(places):
         "google_map_links": links
     }
 
-def call_crawler(url: str, places: str = None) -> None:
+
+def url_maker(keyword:str, location: str) -> str:
+    return f"https://www.google.com/maps/search/{keyword} near {location}?hl=en"
+
+def call_crawler(keyword: str, location: str) -> None:
+    url = url_maker(keyword=keyword, location=location)
     bot = Scraper(url)
     places = get_places_name(bot)
-    results = extract_places(places)
-    
+    results = extract_places(places[0])
+    return results
 
     
 
 if __name__ == "__main__":
+    call_crawler("restaurants", "Dhaka")
     # https://www.google.com/maps/place/The+Garden+Kitchen+at+Sheraton+Dhaka
-    call_crawler("https://www.google.com/maps/search/software company near gulshan?hl=en")
+    # call_crawler("https://www.google.com/maps/search/software company near gulshan?hl=en")
     # call_crawler("https://www.google.com/maps/search/restaurants near gulshan dhaka?hl=en")
 
     # data = {
