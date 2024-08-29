@@ -145,7 +145,7 @@ def extract_places(places):
         addresses.append(clean_text(address))
         websites.append(clean_text(website))
         names.append(name)
-        links.append(place)
+        links.append(place_bot.driver.current_url)
         # place_order = place_bot.find_element_by_xpath("//a[@data-tooltip='Place an order']", False, 4)
         # if place_order:
         #     place_orders.append(clean_text(place_order.text).replace("Place an order\n", ""))
@@ -176,8 +176,8 @@ def call_crawler(keyword: str, location: str) -> None:
     
 
 if __name__ == "__main__":
-    call_crawler("restaurants", "Dhaka")
-    # https://www.google.com/maps/place/The+Garden+Kitchen+at+Sheraton+Dhaka
+    # call_crawler("restaurants", "Dhaka")
+    # call_crawler(keyword="", location="", places=["https://www.google.com/maps/place/Spaghetti+Jazz,+Dhaka/data=!4m7!3m6!1s0x3755c7a6f8cab4eb:0x13f527876dcd7594!8m2!3d23.7952438!4d90.4143379!16s%2Fg%2F1ts3czt9!19sChIJ67TK-KbHVTcRlHXNbYcn9RM?authuser=0&hl=en&rclk=1"])
     # call_crawler("https://www.google.com/maps/search/software company near gulshan?hl=en")
     # call_crawler("https://www.google.com/maps/search/restaurants near gulshan dhaka?hl=en")
 
