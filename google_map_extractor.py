@@ -1,22 +1,29 @@
 import os
 import tkinter as tk
+import tkinter.messagebox as messagebox
 from tkinter import ttk
 
 import pandas as pd
 
-from crawler import call_crawler
+from crawler import call_crawler, get_places
 
 # Global variables to store keyword and location
 keyword_value = None
 location_value = None
+tree = None
+
+def notify(message):
+    messagebox.showinfo(title="Sucess", message=message)
+
 
 def call_crawler_helper():
-    global keyword_value, location_value
+    global keyword_value, location_value, results
     keyword_value = keyword_entry.get()
     location_value = location_entry.get()
     # Pass the keyword and location to the crawler function if needed
-    results = call_crawler(keyword_value, location_value)
-    display_results(results)
+    places = get_places(keyword_value, location_value)
+    results = call_crawler(places)
+    fetch_results()
 
 def remove_selected_row(event):
     # Get the selected item
@@ -50,44 +57,47 @@ def export_to_excel():
     df.to_excel(file_path, index=False)
     print(f"Data exported to {file_path}")
 
-def display_results(results=None):
+
+def fetch_results():
+    global results
+    try:
+        # Get the next result from the generator
+        new_result = next(results)
+        display_results(new_result)
+        # Schedule the next call to fetch_results
+        root.after(10000, fetch_results)  # After 10 seconds all the method
+    except StopIteration:
+        # Generator is exhausted
+        print("All results have been fetched.")
+        notify(message="All results have been fetched.")
+
+def display_results(new_result=None):
     global tree
-    if results is None:
+    if new_result is None:
         return
-    # Clear previous results
-    for widget in table_frame.winfo_children():
-        widget.destroy()
-    
-    # Extract keys and values from the dictionary
-    columns = list(results.keys())
-    
-    # Create Treeview with columns
-    tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=10)
-    
-    # Set up columns and headings
-    for col in columns:
-        tree.heading(col, text=col.capitalize(), anchor=tk.CENTER)
-        tree.column(col, anchor=tk.CENTER, width=100)
-    
-    # Insert data into the table
-    for row in zip(*results.values()):
-        tree.insert("", tk.END, values=row)
-    
-    # Create Scrollbars
-    vert_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
-    hor_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
-    tree.configure(yscrollcommand=vert_scrollbar.set, xscrollcommand=hor_scrollbar.set)
-    
-    # Pack the Treeview and Scrollbars
-    tree.grid(row=0, column=0, sticky='nsew')
-    vert_scrollbar.grid(row=0, column=1, sticky='ns')
-    hor_scrollbar.grid(row=1, column=0, sticky='ew')
-    
-    table_frame.grid_rowconfigure(0, weight=1)
-    table_frame.grid_columnconfigure(0, weight=1)
-    
-    # Bind right-click to remove a row
-    tree.bind("<Button-3>", remove_selected_row)
+
+    if tree is None:
+        columns = list(new_result.keys())
+        tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=10)
+        for col in columns:
+            tree.heading(col, text=col.capitalize(), anchor=tk.CENTER)
+            tree.column(col, anchor=tk.CENTER, width=150)
+
+        vert_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+        hor_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
+        tree.configure(yscrollcommand=vert_scrollbar.set, xscrollcommand=hor_scrollbar.set)
+
+        tree.grid(row=0, column=0, sticky='nsew')
+        vert_scrollbar.grid(row=0, column=1, sticky='ns')
+        hor_scrollbar.grid(row=1, column=0, sticky='ew')
+
+        table_frame.grid_rowconfigure(0, weight=1)
+        table_frame.grid_columnconfigure(0, weight=1)
+
+        tree.bind("<Button-3>", remove_selected_row)
+
+    values = list(new_result.values())
+    tree.insert("", tk.END, values=values)
 
 root = tk.Tk()
 root.title("Google Map Data Scraper")
