@@ -6,7 +6,7 @@ import urllib.parse
 import pyautogui
 import pyperclip
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.action_chains import ActionChains, ScrollOrigin
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 
 from helper.scaper import Scraper
@@ -140,44 +140,44 @@ def extract_phone_number(phone):
     else:
         return ""
 
-def extract_places(places):
+def extract_places(place):
     # place_orders = []
-    for place in places:
-        random_sleep_seconds(10)
-        place_bot = Scraper(place)
+    random_sleep_seconds(6)
+    place_bot = Scraper(place)
 
-        click_continue_button(place_bot)
+    click_continue_button(place_bot)
 
-        name=extract_name(place)
-        main_div = place_bot.find_element_by_xpath('//*[@jsaction="focus:scrollable.focus; blur:scrollable.blur"]', False, 10)
-        if main_div and main_div.is_enabled():
-            ActionChains(place_bot.driver)\
-                .move_to_element(main_div)\
-                    .move_by_offset(0,200)\
-                        .click()\
-                            .perform()
-            address = place_bot.find_element_by_xpath("//button[contains(@aria-label, 'Address:')]", False, 4)
-            phone = place_bot.find_element_by_xpath("//button[starts-with(@data-item-id,'phone')]", False, 10)
-            website = place_bot.find_element_by_xpath("//a[starts-with(@data-item-id,'authority')]", False, 10)
-            phone = clean_text(phone)
-            address = clean_text(address)
-            website = clean_text(website)
-            link = place_bot.driver.current_url
-            data = {
-                "name": name,
-                "phone": phone,
-                "address": address,
-                # "place_order": place_orders,
-                "website": website,
-                "google_map_links": link
-            }
-            # place_order = place_bot.find_element_by_xpath("//a[@data-tooltip='Place an order']", False, 4)
-            # if place_order:
-            #     place_orders.append(clean_text(place_order.text).replace("Place an order\n", ""))
-            # else:
-            #     place_orders.append("")
-            yield data
+    name=extract_name(place)
+    main_div = place_bot.find_element_by_xpath('//*[@jsaction="focus:scrollable.focus; blur:scrollable.blur"]', False, 10)
+    if main_div and main_div.is_enabled():
+        ActionChains(place_bot.driver)\
+            .move_to_element(main_div)\
+                .move_by_offset(0,200)\
+                    .click()\
+                        .perform()
+        address = place_bot.find_element_by_xpath("//button[contains(@aria-label, 'Address:')]", False, 4)
+        phone = place_bot.find_element_by_xpath("//button[starts-with(@data-item-id,'phone')]", False, 5)
+        website = place_bot.find_element_by_xpath("//a[starts-with(@data-item-id,'authority')]", False, 5)
+        phone = clean_text(phone)
+        address = clean_text(address)
+        website = clean_text(website)
+        link = place_bot.driver.current_url
+        data = {
+            "name": name,
+            "phone": phone,
+            "address": address,
+            # "place_order": place_orders,
+            "website": website,
+            "google_map_links": link
+        }
+        # place_order = place_bot.find_element_by_xpath("//a[@data-tooltip='Place an order']", False, 4)
+        # if place_order:
+        #     place_orders.append(clean_text(place_order.text).replace("Place an order\n", ""))
+        # else:
+        #     place_orders.append("")
         place_bot.driver.close()
+        return data
+    place_bot.driver.close()
 
 
 def url_maker(keyword:str, location: str) -> str:
@@ -192,9 +192,9 @@ def get_places(keyword: str, location: str):
     return places
 
 
-def call_crawler(places):
-    results = extract_places(places)
-    yield from results
+def call_crawler(place):
+    results = extract_places(place)
+    return results
 
     
 

@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter as tk
 import tkinter.messagebox as messagebox
 from datetime import datetime
@@ -12,67 +13,90 @@ from crawler import call_crawler, get_places
 keyword_value = None
 location_value = None
 tree = None
+results = []
 
 def notify(message):
-    messagebox.showinfo(title="Sucess", message=message)
+    messagebox.showinfo(title="Success", message=message)
 
+def long_running_task_get_places(result_container, keyword_value, location_value):
+    places = get_places(keyword_value, location_value)
+    result_container["places"] = places
+
+def long_running_task_get_places_by_keyword(result_container, place):
+    result = call_crawler(place)
+    result_container["place"] = result
+
+def get_place_info(root, result_container):
+    if "place" in result_container:
+        new_result = result_container["place"]
+        display_results(new_result)
+        del result_container["place"]
+
+def process_next_place(root, result_container, index):
+    if index < len(result_container["places"]):
+        place = result_container["places"][index]
+        
+        # Start a new thread for call_crawler
+        thread = threading.Thread(target=long_running_task_get_places_by_keyword, args=(result_container, place))
+        thread.start()
+        
+        # Wait for the thread to finish and then process the result
+        root.after(100, lambda: check_thread_completion(root, result_container, thread, index))
+    else:
+        # All places have been processed
+        notify("All places have been processed.")
+
+def check_thread_completion(root, result_container, thread, index):
+    if thread.is_alive():
+        # If the thread is still running, check again after 100ms
+        root.after(100, check_thread_completion, root, result_container, thread, index)
+    else:
+        # If the thread has finished, process the result and move to the next place
+        get_place_info(root, result_container)
+        process_next_place(root, result_container, index + 1)
+
+def get_data_places(root, result_container):
+    if "places" in result_container:
+        # Start processing the first place
+        process_next_place(root, result_container, 0)
+    else:
+        # Keep checking for the "places" key in result_container
+        root.after(100, get_data_places, root, result_container)
 
 def call_crawler_helper():
-    global keyword_value, location_value, results
+    global keyword_value, location_value
     keyword_value = keyword_entry.get()
     location_value = location_entry.get()
-    # Pass the keyword and location to the crawler function if needed
-    places = get_places(keyword_value, location_value)
-    results = call_crawler(places)
-    fetch_results()
+
+    result_container = {}
+    thread = threading.Thread(target=long_running_task_get_places, args=(result_container, keyword_value, location_value))
+    thread.start()
+    
+    # Check for the result of get_places
+    get_data_places(root, result_container)
 
 def remove_selected_row(event):
-    # Get the selected item
     selected_item = tree.selection()[0]
-    # Remove the selected item from the tree
     tree.delete(selected_item)
 
 def export_to_excel():
     desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-    # Define the path for the folder
     folder_path = os.path.join(desktop_path, "google_map_data")
 
-    # Check if the folder exists, and create it if it doesn't
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-        print(f"Folder '{folder_path}' created.")
-    else:
-        print(f"Folder '{folder_path}' already exists.")
-
-    # Extract data from the treeview and store it in a dictionary
+    
     data = {col: [] for col in tree["columns"]}
     for row in tree.get_children():
         values = tree.item(row)["values"]
         for col, value in zip(tree["columns"], values):
             data[col].append(value)
     
-    # Convert dictionary to DataFrame and export to Excel
     df = pd.DataFrame(data)
     file_name = f"google_map_data_{keyword_value}_near_{location_value}_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
     file_path = os.path.join(folder_path, file_name)
     df.to_excel(file_path, index=False)
     print(f"Data exported to {file_path}")
-
-
-def fetch_results():
-    global results
-    try:
-        # Get the next result from the generator
-        new_result = next(results)
-        display_results(new_result)
-        # Schedule the next call to fetch_results
-        root.after(10000, fetch_results)  # After 10 seconds all the method
-    except StopIteration:
-        # fetch automatically 
-        export_to_excel()
-        # Generator is exhausted
-        print("All results have been fetched.")
-        notify(message="All results have been fetched.")
 
 def display_results(new_result=None):
     global tree
