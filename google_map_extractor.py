@@ -44,7 +44,9 @@ def process_next_place(root, result_container, index):
         root.after(100, lambda: check_thread_completion(root, result_container, thread, index))
     else:
         # All places have been processed
-        notify("All places have been processed.")
+        start_button.config(state=tk.NORMAL)  # Re-enable the Start button
+        export_to_excel()
+        notify("All places have been processed")
 
 def check_thread_completion(root, result_container, thread, index):
     if thread.is_alive():
@@ -67,7 +69,9 @@ def call_crawler_helper():
     global keyword_value, location_value
     keyword_value = keyword_entry.get()
     location_value = location_entry.get()
-
+    
+    start_button.config(state=tk.DISABLED)  # Disable the Start button
+    
     result_container = {}
     thread = threading.Thread(target=long_running_task_get_places, args=(result_container, keyword_value, location_value))
     thread.start()
@@ -97,6 +101,7 @@ def export_to_excel():
     file_path = os.path.join(folder_path, file_name)
     df.to_excel(file_path, index=False)
     print(f"Data exported to {file_path}")
+    notify(f"Data exported")
 
 def display_results(new_result=None):
     global tree
