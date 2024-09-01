@@ -67,6 +67,8 @@ def fetch_results():
         # Schedule the next call to fetch_results
         root.after(10000, fetch_results)  # After 10 seconds all the method
     except StopIteration:
+        # fetch automatically 
+        export_to_excel()
         # Generator is exhausted
         print("All results have been fetched.")
         notify(message="All results have been fetched.")
