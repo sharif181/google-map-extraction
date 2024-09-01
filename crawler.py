@@ -1,6 +1,7 @@
 import random
 import re
 import time
+import urllib.parse
 
 import pyautogui
 import pyperclip
@@ -90,6 +91,7 @@ def extract_name(place: str) -> str:
 
         # Extract the text between the markers
         extracted_text = place[start_pos:end_pos].replace("+", " ")
+        extracted_text = urllib.parse.unquote(extracted_text)
         return extracted_text
     except Exception as e:
         print(e)
