@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 import tkinter.messagebox as messagebox
+from datetime import datetime
 from tkinter import ttk
 
 import pandas as pd
@@ -52,7 +53,7 @@ def export_to_excel():
     
     # Convert dictionary to DataFrame and export to Excel
     df = pd.DataFrame(data)
-    file_name = f"google_map_data_{keyword_value}_{location_value}.xlsx"
+    file_name = f"google_map_data_{keyword_value}_near_{location_value}_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
     file_path = os.path.join(folder_path, file_name)
     df.to_excel(file_path, index=False)
     print(f"Data exported to {file_path}")
